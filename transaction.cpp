@@ -2,64 +2,68 @@
 // Created by Saeid Yazdani on 9/30/2024.
 //
 
+#include <algorithm>
+
 #include "transaction.h"
 
-namespace embedonix {
-  namespace trading_tax_calculator {
-    Transaction::Transaction(const Asset &asset, TransactionType type, const std::string &dateString, double value)
-            : mAsset(asset), mType(type), mDateString(dateString), mValue(value) {}
+namespace embedonix::trading_tax_calculator {
 
-    const Asset &Transaction::getAsset() const {
-      return mAsset;
-    }
+  Transaction::Transaction(const Asset& asset, TransactionType type, const std::string& dateString, double value)
+          : mAsset(asset), mType(type), mDateString(dateString), mValue(value) {}
 
-    TransactionType Transaction::getType() const {
-      return mType;
-    }
+  Transaction::Transaction(const Asset& asset, TransactionType type, const std::string& dateString, double value,
+                           std::string currency) : mCurrency(currency) {
+    Transaction(asset, type, dateString, value);
+  }
 
-    const std::string &Transaction::getDateString() const {
-      return mDateString;
-    }
+  const Asset&
+  Transaction::getAsset() const {
+    return mAsset;
+  }
 
-    double Transaction::getValue() const {
-      return mValue;
-    }
+  TransactionType
+  Transaction::getType() const {
+    return mType;
+  }
 
-    void Transaction::setAsset(const Asset &asset) {
-      mAsset = asset;
-    }
+  const std::string&
+  Transaction::getDateString() const {
+    return mDateString;
+  }
 
-    void Transaction::setType(TransactionType type) {
-      mType = type;
-    }
+  double
+  Transaction::getValue() const {
+    return mValue;
+  }
 
-    void Transaction::setDateString(const std::string &dateString) {
-      mDateString = dateString;
-    }
+  void
+  Transaction::setAsset(const Asset& asset) {
+    mAsset = asset;
+  }
 
-    void Transaction::setValue(double value) {
-      mValue = value;
-    }
+  void
+  Transaction::setType(TransactionType type) {
+    mType = type;
+  }
 
-    TransactionType getTransactionTypeFromString(std::string_view typeString) noexcept {
-      namespace sl = embedonix::simplelibs;
-      std::string lowerCase{typeString};
-      sl::stringtools::trim::both_sides(lowerCase);
-      std::transform(lowerCase.begin(), lowerCase.end(), lowerCase.begin(), ::tolower);
+  void
+  Transaction::setDateString(const std::string& dateString) {
+    mDateString = dateString;
+  }
 
-      if (lowerCase == "trade") {
-        return TransactionType::Trade;
-      } else if (lowerCase == "swap") {
-        return TransactionType::Swap;
-      } else if (lowerCase == "corporate_action") {
-        return TransactionType::Dividend;
-      } else if (lowerCase == "transfer") {
-        return TransactionType::Transfer;
-      } else if (lowerCase == "deposit") {
-        return TransactionType::Deposit;
-      } else {
-        return TransactionType::Unknown;
-      }
-    }
-  } // trading_tax_calculator
-} // embedonix
+  void
+  Transaction::setValue(double value) {
+    mValue = value;
+  }
+
+  void
+  Transaction::setCurrency(const std::string& currency) {
+    Transaction::mCurrency = currency;
+  }
+
+  std::string
+  Transaction::getCurrency() const {
+    return mCurrency;
+  }
+
+} // End

@@ -2,28 +2,40 @@
 // Created by Saeid Yazdani on 9/30/2024.
 //
 
-#ifndef TRADINGTAXCALCULATOR_MAINWINDOW_H
-#define TRADINGTAXCALCULATOR_MAINWINDOW_H
+#pragma once
 
+#include <QObject>
 #include <QMainWindow>
+#include <QAbstractItemModel>
+#include <QListWidgetItem>
 
-namespace embedonix_tax_calculator_ui {
-    QT_BEGIN_NAMESPACE
-    namespace Ui { class MainWindow; }
-    QT_END_NAMESPACE
+#include "capitalcom_asset_result_table_model.h"
 
-    class MainWindow : public QMainWindow {
-        Q_OBJECT
+namespace embedonix::trading_tax_calculator::qt {
 
-    public:
-        explicit MainWindow(QWidget *parent = nullptr);
-        void addToAssetLists(QString symbol);
+  QT_BEGIN_NAMESPACE
+  namespace Ui { class MainWindow; }
+  QT_END_NAMESPACE
 
-        ~MainWindow() override;
+  class MainWindow : public QMainWindow {
+  Q_OBJECT
 
-    private:
-        Ui::MainWindow *ui;
-    };
-} // embedonix_tax_calculator_ui
+  public:
+    explicit MainWindow(QWidget* parent = nullptr);
 
-#endif //TRADINGTAXCALCULATOR_MAINWINDOW_H
+    ~MainWindow() override;
+
+  private:
+    Ui::MainWindow* ui;
+    AssetResultTableModelCapitalCom* mCapitalComTable;
+
+  private slots:
+
+    void updateAssetListByYear(const QString& year);
+
+    void updateResultForSymbol(const QString& symbol);
+
+
+  };
+} // end namespace
+

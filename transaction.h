@@ -4,124 +4,99 @@
 
 #pragma once
 
-#include <embedonix/simplelibs/stringtools/trim.h>
-#include <algorithm>
+#include <iostream>
+
 
 #include "asset.h"
 
 namespace embedonix::trading_tax_calculator {
 
   /**
-   * Enum class representing different types of financial transactions.
-   *
-   * Enumerators:
-   * - Unknown: Represents an unknown or unspecified type of transaction.
-   * - Trade: Represents a transaction that involves buying/selling financial instruments.
-   * - Swap: Represents a transaction that involves fees.
-   * - Dividend: Represents a transaction that involves the redistribution of profit to shareholders.
-   * - Deposit: Represents a transaction that involves adding funds to an account.
-   * - Transfer: Represents a transaction that involves moving funds from one account to another.
-   */
-  enum class TransactionType : unsigned char {
-    Unknown = 0,
-    Trade,
-    Swap,
-    Dividend,
-    Deposit,
-    Transfer
-  };
-
-  TransactionType getTransactionTypeFromString(std::string_view typeString) noexcept;
-
-  /**
    * The Transaction class represents a financial transaction involving an asset.
    */
   class Transaction {
+
+  private:
     Asset mAsset;
-    TransactionType mType;
+    TransactionType mType = TransactionType::Unknown;
     std::string mDateString;
     double mValue;
+    std::string mCurrency;
 
   public:
     Transaction() = default;
 
-    Transaction(const Asset &asset, TransactionType type, const std::string &dateString, double value);
+    Transaction(const Asset& asset, TransactionType type, const std::string& dateString, double value);
+
+    Transaction(const Asset& asset, TransactionType type, const std::string& dateString, double value,
+                std::string currency);
 
     /**
      * Retrieves the asset associated with the transaction.
      *
      * @return A const reference to the asset of the transaction.
      */
-    const Asset &getAsset() const;
+    const Asset&
+    getAsset() const;
 
     /**
      * Retrieves the type of the transaction.
      *
      * @return The type of the transaction as a TransactionType enum.
      */
-    TransactionType getType() const;
+    TransactionType
+    getType() const;
 
     /**
      * Retrieves the date string associated with the transaction.
      *
      * @return A const reference to the date string of the transaction.
      */
-    const std::string &getDateString() const;
+    const
+    std::string& getDateString() const;
 
     /**
      * Retrieves the value associated with the transaction.
      *
      * @return The value of the transaction in double.
      */
-    double getValue() const;
+    double
+    getValue() const;
 
-    void setAsset(const Asset &asset);
+    void
+    setAsset(const Asset& asset);
 
-    void setType(TransactionType type);
+    void
+    setType(TransactionType type);
 
-    void setDateString(const std::string &dateString);
+    void
+    setDateString(const std::string& dateString);
 
-    void setValue(double value);
+    void
+    setValue(double value);
 
-    // Move constructor
-    Transaction(Transaction &&other) noexcept
-            : mAsset(std::move(other.mAsset)),
-              mType(std::move(other.mType)),
-              mDateString(std::move(other.mDateString)),
-              mValue(other.mValue) {
-      other.mValue = 0;
+    void
+    setCurrency(const std::string& currency);
+
+    std::string
+    getCurrency() const;
+
+/**
+ * Overload of the output stream operator for the Transaction class.
+ *
+ * @param os The output stream.
+ * @param transaction The transaction object to output.
+ * @return The output stream with the transaction information.
+ */
+    friend std::ostream& operator<<(std::ostream& os, const Transaction& transaction) {
+      os << "Transaction("
+         << "Asset: " << transaction.getAsset() << ", "
+         << "Type: " << static_cast<std::underlying_type_t<TransactionType>>(transaction.getType()) << ", "
+         << "Date: " << transaction.getDateString() << ", "
+         << "Value: " << transaction.getValue() << " " << transaction.getCurrency()
+         << ")";
+      return os;
     }
-
-    // Move assignment operator
-    Transaction &operator=(Transaction &&other) noexcept {
-      if (this != &other) {
-        mAsset = std::move(other.mAsset);
-        mType = std::move(other.mType);
-        mDateString = std::move(other.mDateString);
-        mValue = other.mValue;
-        other.mValue = 0;
-      }
-      return *this;
-    }
-
-    // Copy constructor
-    Transaction(const Transaction &other)
-            : mAsset(other.mAsset),
-              mType(other.mType),
-              mDateString(other.mDateString),
-              mValue(other.mValue) {}
-
-    // Copy assignment operator
-    Transaction& operator=(const Transaction& other) {
-      if (this != &other) {
-        mAsset = other.mAsset;
-        mType = other.mType;
-        mDateString = other.mDateString;
-        mValue = other.mValue;
-      }
-      return *this;
-    }
-
   };
 
 }

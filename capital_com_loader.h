@@ -4,6 +4,8 @@
 
 #pragma once
 
+#include <unordered_set>
+
 #include <embedonix/simplelibs/fileio/filereader.h>
 #include <embedonix/simplelibs/stringtools/trim.h>
 #include <embedonix/simplelibs/stringtools/print.h>
@@ -12,8 +14,12 @@
 
 #include "transaction.h"
 
-namespace embedonix::trading_tax_calculator {
+namespace embedonix::trading_tax_calculator::capitalcom {
 
-  auto generateTransactionsFromCsvFile(std::string_view file) -> std::vector<Transaction>;
+  std::vector<Transaction>
+  generateTransactionsFromCsvFile(std::string file);
+
+  std::unordered_set<Asset>
+  getUniqueAssetsInTransactions(const std::vector<Transaction>& transactions);
 
 } // end NS

@@ -4,7 +4,13 @@
 
 #pragma once
 
+
+#include <iostream>
 #include <string>
+#include <set>
+
+#include "asset_types.h"
+#include "transaction_types.h"
 
 namespace embedonix::trading_tax_calculator {
 
@@ -12,57 +18,97 @@ namespace embedonix::trading_tax_calculator {
   private:
     std::string mName;
     std::string mSymbol;
-  public:
-    const std::string &getName() const;
-    const std::string &getSymbol() const;
-
-    void setSymbol(const std::string &symbol);
-    void setName(const std::string &name);
+    AssetType mAssetType;
+    std::set<TransactionType> mTransactionTypes;
 
   public:
+    const std::string& getName() const;
 
-    Asset();
-    Asset(const std::string &mName, const std::string &mSymbol);
+    void
+    setName(const std::string& name);
 
-    bool operator==(const Asset &other) const noexcept {
-      return mName == other.mName && mSymbol == other.mSymbol;
+    const
+    std::string& getSymbol() const;
+
+    void
+    setSymbol(const std::string& symbol);
+
+    AssetType
+    getAssetType() const;
+
+    void
+    setAssetType(AssetType assetType);
+
+    void
+    setTransactionTypes(const std::set<TransactionType>& typesSet);
+
+
+  public:
+    Asset() = default;
+
+    Asset(const std::string& mName, const std::string& mSymbol);
+
+    bool
+    operator==(const Asset& other) const noexcept {
+      return mName == other.mName && mSymbol == other.mSymbol
+             && mAssetType == other.mAssetType;
     }
 
+    // FIXME this is potentially expensive to have a set for each asset/transaction
+    bool
+    addTransactionType(TransactionType type);
 
-    // Move constructor
-    Asset(Asset &&other) noexcept: mName(std::move(other.mName)), mSymbol(std::move(other.mSymbol)) {}
+    auto
+    getTransactionTypes() const { return mTransactionTypes; }
 
-    // Move assignment operator
-    Asset &operator=(Asset &&other) noexcept {
-      if (this != &other) {
-        mName = std::move(other.mName);
-        mSymbol = std::move(other.mSymbol);
+
+    friend std::ostream&
+    operator<<(std::ostream& os, const Asset& asset) {
+      os << "Asset(Name: " << asset.getName() << ", Symbol: " << asset.getSymbol() << ")";
+
+      // Print the transaction types
+      os << ", Transaction Types: [";
+      for (const auto& type: asset.getTransactionTypes()) {
+        switch (type) {
+          case TransactionType::Unknown:
+            os << "Unknown";
+            break;
+          case TransactionType::Trade:
+            os << "Trade";
+            break;
+          case TransactionType::Swap:
+            os << "Swap";
+            break;
+          case TransactionType::Dividend:
+            os << "Dividend";
+            break;
+          case TransactionType::Deposit:
+            os << "Deposit";
+            break;
+          case TransactionType::Transfer:
+            os << "Transfer";
+            break;
+        }
+        if (&type != &*--asset.getTransactionTypes().end()) {
+          os << ", ";
+        }
       }
-      return *this;
-    }
-
-    // Copy constructor
-    Asset(const Asset &other) : mName(other.mName), mSymbol(other.mSymbol) {}
-
-    // Copy assignment operator
-    Asset &operator=(const Asset &other) {
-      if (this != &other) {
-        mName = other.mName;
-        mSymbol = other.mSymbol;
-      }
-      return *this;
+      os << "]";
+      return os;
     }
 
   };
 
-}
+} // End namespace embedonix::trading_tax_calculator
 
-// Add embedonix::trading_tax_calculator::Asset hash to namespace std
+
 namespace std {
   template<>
   struct hash<embedonix::trading_tax_calculator::Asset> {
-    std::size_t operator()(const embedonix::trading_tax_calculator::Asset &asset) const noexcept {
-      return hash<std::string>()(asset.getName()) ^ (hash<std::string>()(asset.getName()) << 1);
+    std::size_t operator()(const embedonix::trading_tax_calculator::Asset& asset) const noexcept {
+      return hash<std::string>()(asset.getName())
+             ^ (hash<std::string>()(asset.getSymbol()) << 1)
+             ^ (hash<int>()(static_cast<int>(asset.getAssetType())) << 2);
     }
   };
 }
