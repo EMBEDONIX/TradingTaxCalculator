@@ -25,7 +25,7 @@ namespace embedonix::trading_tax_calculator::qt {
 
   int AssetResultTableModelCapitalCom::columnCount(const QModelIndex& parent) const {
     Q_UNUSED(parent);
-    return 5;
+    return mHeaders.size() + 3;
   }
 
   QVariant AssetResultTableModelCapitalCom::data(const QModelIndex& index, int role) const {
@@ -43,23 +43,18 @@ namespace embedonix::trading_tax_calculator::qt {
     }
 
     if (orientation == Qt::Horizontal) {
-      switch (section) {
-        case 0:
-          return QString("Symbol");
-        case 1:
-          return QString("Name");
-        case 2:
-          return QString("Trade");
-        case 3:
-          return QString("Swap");
-        case 4:
-          return QString("Dividend");
-        default:
-          return QVariant();
+
+      for (size_t i = 0; i < mHeaders.size(); ++i) {
+        if (i == section) {
+          return mHeaders.at(i);
+        }
       }
+
     } else {
       return QString("Row %1").arg(section + 1);
     }
+
+    return QVariant("__BAD__"); // if nothing to do, return something
   }
 
   void AssetResultTableModelCapitalCom::loadFile(const QString& fileName) {
@@ -72,7 +67,40 @@ namespace embedonix::trading_tax_calculator::qt {
       return;
     }
 
+//    QVector<QPair<Asset, QVector<TransactionType>>> assetsWithTypes;
+//    for (const auto& asset: assets) {
+//      auto types = capitalcom::getTransactionTypesForAsset(transactions, asset);
+//      QPair<Asset, QVector<TransactionType>> pair;
+//      pair.first = asset;
+//      for (const auto& type: types) {
+//        pair.second.push_back(type);
+//      }
+//      std::sort(pair.second.begin(), pair.second.end());
+//      assetsWithTypes.push_back(pair);
+//    }
+//
+//    // Find out the asset with highers number of transactiontypes involved
+//    auto maxTypesIt = std::max_element(assetsWithTypes.begin(), assetsWithTypes.end(),
+//                                       [](const auto& a,
+//                                          const auto& b) {
+//                                         return a.second.size() < b.second.size();
+//                                       });
+
+    auto involvedTypes = capitalcom::getTypesInTransactions(transactions);
+
     beginResetModel();
+
+    // Update header of the table according to involved transaction types
+    mHeaders.clear();
+    mHeaders.shrink_to_fit();
+
+    mHeaders << "Date";
+    mHeaders << "Symbol";
+    mHeaders << "Name";
+
+    for (const auto& type: involvedTypes) {
+      mHeaders << QString::fromStdString(transactionTypeToString(type));
+    }
 
     mResults.clear();
     mResults.resize(assets.size());
@@ -82,8 +110,10 @@ namespace embedonix::trading_tax_calculator::qt {
       mResults[i] << QString::fromStdString(it->getSymbol());
       mResults[i] << QString::fromStdString(it->getName());
       mResults[i] << QString::fromStdString(assetTypeToString(it->getAssetType()));
-      mResults[i] << QString::fromStdString("0");
-      mResults[i] << QString::fromStdString("1");
+
+      for (size_t j = 0; j < mHeaders.size(); ++j) {
+        mResults[i] << "000";
+      }
       it++;
     }
 

@@ -37,7 +37,8 @@ namespace embedonix::trading_tax_calculator::qt {
     loadFile(const QString& fileName);
 
   private:
-    QVector<QStringList> mResults;
+    QVector<QStringList>  mResults;
+    QVector<QString>      mHeaders;
 
   };
 
