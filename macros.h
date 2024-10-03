@@ -6,16 +6,17 @@
 
 #ifdef __BENCHMARK__
 #include <embedonix/simplelibs/utilities/benchmark.h>
-// Starts a timer
+// Starts a timer by creating a time_point
 #define __BENCHMARK_TIMER_START(MY_TIMER) \
     std::chrono::time_point<std::chrono::high_resolution_clock> MY_TIMER; \
     embedonix::simplelibs::utilities::benchmark::measure::start_timer(MY_TIMER);
 
-#define __BENCHMARK_TIMER_STOP(timer) \
-    puts(std::format("Function {} took {}", \
+// Stops a previously started time_point
+#define __BENCHMARK_TIMER_STOP(MY_TIMER) \
+    puts(std::format("__BENCHMARK__ -> {}\t{}", \
                      __func__, \
                      embedonix::simplelibs::utilities::benchmark::measure::format_duration( \
-                             embedonix::simplelibs::utilities::benchmark::measure::stop_timer(timer)).c_str() \
+                             embedonix::simplelibs::utilities::benchmark::measure::stop_timer(MY_TIMER)) \
          ).c_str() \
     );
 #else
