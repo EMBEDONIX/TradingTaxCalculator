@@ -28,5 +28,8 @@ namespace embedonix::trading_tax_calculator::capitalcom {
   std::unordered_set<TransactionType>
   getTransactionTypesForAsset(const std::vector<Transaction> transactions, const Asset& asset);
 
+  std::unordered_set<std::string>
+  getYearsInTransactions(const std::vector<Transaction>& transactions);
+
 
 } // end NS

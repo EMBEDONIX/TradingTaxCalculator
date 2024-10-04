@@ -55,12 +55,11 @@ namespace embedonix::trading_tax_calculator::capitalcom {
 
   std::unordered_set<Asset>
   getUniqueAssetsInTransactions(const std::vector<Transaction>& transactions) {
-    __BENCHMARK_TIMER_START(timer);
+    __BENCHMARK_TIMER_START(timer)
     std::unordered_set<Asset> assets;
 #ifdef __DEBUG__
     int numDuplicates = 0;
     int numUniqueAssts = 0;
-
 #endif
     for (const auto& tr: transactions) {
 
@@ -71,17 +70,16 @@ namespace embedonix::trading_tax_calculator::capitalcom {
 #endif
     }
 #ifdef __DEBUG__
-    auto debugLine = std::format("Found {} unique and {} duplicate assets",
-                                 numUniqueAssts, numDuplicates);
-    puts(debugLine.c_str());
+    __PRINT_DEBUG__(std::format("Found {} unique and {} duplicate assets.",
+                                numUniqueAssts, numDuplicates))
 #endif
-    __BENCHMARK_TIMER_STOP(timer);
+    __BENCHMARK_TIMER_STOP(timer)
     return assets;
   }
 
   std::unordered_set<TransactionType>
   getTransactionTypesForAsset(const std::vector<Transaction> transactions, const Asset& asset) {
-    __BENCHMARK_TIMER_START(timer);
+    __BENCHMARK_TIMER_START(timer)
 
     auto set = std::unordered_set<TransactionType>();
 
@@ -91,19 +89,31 @@ namespace embedonix::trading_tax_calculator::capitalcom {
       }
     }
 
-    __BENCHMARK_TIMER_STOP(timer);
+    __BENCHMARK_TIMER_STOP(timer)
     return set;
   }
 
   std::unordered_set<TransactionType> getTypesInTransactions(const std::vector<Transaction>& transactions) {
     __BENCHMARK_TIMER_START(timer)
 
-    auto involvedTypes = std::unordered_set<TransactionType>();
+    auto set = std::unordered_set<TransactionType>();
     for (const auto& tr: transactions) {
-      involvedTypes.insert(tr.getType());
+      set.insert(tr.getType());
     }
+#ifdef __DEBUG__
+    __PRINT_DEBUG__(std::format("Found {} types", set.size()))
+#endif
+    __BENCHMARK_TIMER_STOP(timer)
+    return set;
+  }
 
-    return involvedTypes;
+  std::unordered_set<std::string> getYearsInTransactions(const std::vector<Transaction>& transactions) {
+    __BENCHMARK_TIMER_START(timer)
+    auto years = std::unordered_set<std::string>();
+    for (const auto& tr: transactions) {
+      years.insert(tr.getDateString().substr(0, 4));
+    }
+    return years;
     __BENCHMARK_TIMER_STOP(timer)
   }
 

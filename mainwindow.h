@@ -35,6 +35,9 @@ namespace embedonix::trading_tax_calculator::qt {
 
     void updateResultForSymbol(const QString& symbol);
 
+  public slots:
+    void receiveYears(const QStringList& years);
+
 
   };
 } // end namespace

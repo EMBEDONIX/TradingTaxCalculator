@@ -9,6 +9,7 @@
 #include "mainwindow.h"
 #include "ui_MainWindow.h"
 #include "capital_com_loader.h"
+
 namespace embedonix::trading_tax_calculator::qt {
 
   MainWindow::MainWindow(QWidget* parent) :
@@ -18,19 +19,23 @@ namespace embedonix::trading_tax_calculator::qt {
     mCapitalComTable = new AssetResultTableModelCapitalCom(this);
     ui->tableViewResults->setModel(mCapitalComTable);
 
+#ifdef __DEBUG__
+    mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\TRADING\all_20240928.csv)");
+#endif
+
     connect(ui->action_Open, &QAction::triggered,
-            this, [this](){
-      QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("CSV Files (*.csv)"));
-      if(!fileName.isEmpty()) {
-        mCapitalComTable->loadFile(fileName);
-      }
+            this, [this]() {
+              QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("CSV Files (*.csv)"));
+              if (!fileName.isEmpty()) {
+                mCapitalComTable->loadFile(fileName);
+              }
+            });
 
-
-    });
-
+    connect(mCapitalComTable, &AssetResultTableModelCapitalCom::setOfYearsInData,
+            this, &MainWindow::receiveYears, Qt::QueuedConnection);
 
     connect(ui->comboBoxYears, &QComboBox::currentTextChanged,
-            this, &MainWindow::updateAssetListByYear);
+            mCapitalComTable, &AssetResultTableModelCapitalCom::filterDataForYear);
 
     connect(ui->listWidgetAssets, &QListWidget::currentTextChanged,
             this, &MainWindow::updateResultForSymbol);
@@ -47,6 +52,13 @@ namespace embedonix::trading_tax_calculator::qt {
 
   void MainWindow::updateResultForSymbol(const QString& symbol) {
     ui->textEditResults->clear();
+  }
+
+  void MainWindow::receiveYears(const QStringList& years) {
+    ui->comboBoxYears->clear();
+    for (const auto& year: years) {
+      ui->comboBoxYears->addItem(year);
+    }
   }
 
 } // embedonix_tax_calculator_ui

@@ -29,7 +29,7 @@ add_executable(TradingTaxCalculator main.cpp
         asset_types.cpp
         macros.h)
 
-target_compile_options(TradingTaxCalculator PRIVATE -Wreturn-type)
+target_compile_options(TradingTaxCalculator PRIVATE -Wreturn-type -Werror)
 
 # Check if the build type is Debug
 if (CMAKE_BUILD_TYPE STREQUAL "Debug")
