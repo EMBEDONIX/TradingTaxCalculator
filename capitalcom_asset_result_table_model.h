@@ -14,8 +14,9 @@ namespace embedonix::trading_tax_calculator::qt {
   struct TableRow {
     Asset asset;
     QSet<QString> years;
-    QMap<QString, double> map;
-    // FIXME need a new map < pair<string, string>, double >
+    QMap<QString, double> allValuesPerTypeMap;
+    QMap<QPair<QString, QString>, double> valuesPerYearPerTypeMap;
+    // FIXME need a new allValuesPerTypeMap < pair<string, string>, double >
     // For   <year, type>, value
   };
 

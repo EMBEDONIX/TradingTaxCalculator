@@ -114,6 +114,7 @@ namespace embedonix::trading_tax_calculator::qt {
 
   bool
   AssetResultTableModelCapitalCom::updateCachedData(std::vector<Transaction>& transactions) {
+
     auto assets =
             capitalcom::getUniqueAssetsInTransactions(transactions);
     if (!assets.size()) {
@@ -146,7 +147,11 @@ namespace embedonix::trading_tax_calculator::qt {
       TableRow row;
       row.asset = asset;
       for (const auto& type: mDataCache.involvedTypes) {
-        row.map[QString::fromStdString(transactionTypeToString(type))] = 0.0;
+        QString typeString = QString::fromStdString(transactionTypeToString(type));
+        row.allValuesPerTypeMap[typeString] = 0.0;
+        for (const auto& uniqueYear: mDataCache.uniqueYears) {
+          row.valuesPerYearPerTypeMap[{typeString, QString::fromStdString(uniqueYear)}] = 0.0;
+        }
       }
       rows.push_back(row);
     }
@@ -156,8 +161,19 @@ namespace embedonix::trading_tax_calculator::qt {
         if (row.asset == action.getAsset()) {
           row.years.insert(QString::fromStdString(action.getDateString()).left(4));
           QString type = QString::fromStdString(transactionTypeToString(action.getType()));
-          row.map[type] += action.getValue();
+          row.allValuesPerTypeMap[type] += action.getValue();
+          row.valuesPerYearPerTypeMap[{type,
+                                       QString::fromStdString(action.getDateString()).left(4)}] += action.getValue();
         }
+      }
+    }
+
+
+
+    // Debug print valuesPerYearPerTypeMap
+    for (const auto& row: rows) {
+      for (auto it = row.valuesPerYearPerTypeMap.cbegin(); it != row.valuesPerYearPerTypeMap.cend(); ++it) {
+        qDebug() << "Year:" << it.key().second << ", Type:" << it.key().first << ", Value:" << it.value();
       }
     }
 
@@ -180,41 +196,71 @@ namespace embedonix::trading_tax_calculator::qt {
 
       auto it = mDataCache.involvedTypes.begin();
 
-      for (size_t j = 0; j < rows[i].map.size(); ++j) {
+      for (size_t j = 0; j < rows[i].allValuesPerTypeMap.size(); ++j) {
         mResults[i]
-                << QString("%1").arg(rows[i].map.value(QString::fromStdString(transactionTypeToString(*it++)), 0.0));
+                << QString("%1").arg(
+                        rows[i].allValuesPerTypeMap.value(QString::fromStdString(transactionTypeToString(*it++)), 0.0));
       }
     }
 
   }
 
   void AssetResultTableModelCapitalCom::filterDataForYear(const QString& year) {
+
+    qDebug() << __func__ << "(" << year << ")";
+
+    bool all = (year.toLower() == AllYearsOption.toLower());
+
     beginResetModel();
     mResults.clear();
-    mResults.resize(std::count_if(mDataCache.rows.begin(), mDataCache.rows.end(),
-                                  [&](TableRow row) {
-                                    return row.years.contains(year);
-                                  }));
+    if (!all) {
+      mResults.resize(std::count_if(mDataCache.rows.begin(), mDataCache.rows.end(),
+                                    [&](TableRow row) {
+                                      return row.years.contains(year);
+                                    }));
+    } else {
+      mResults.resize(mDataCache.rows.size());
+    }
     int i = 0;
     for (const auto& row: mDataCache.rows) {
-      if (row.years.contains(year)) {
-        mResults[i] << year;
-        mResults[i] << QString::fromStdString(row.asset.getSymbol());
-        mResults[i] << QString::fromStdString(row.asset.getName());
-        mResults[i] << QString::fromStdString(assetTypeToString(row.asset.getAssetType()));
 
-        auto it = mDataCache.involvedTypes.begin();
-
-        for (size_t j = 0; j < row.map.size(); ++j) {
-          mResults[i]
-                  << QString("%1").arg(row.map.value(QString::fromStdString(transactionTypeToString(*it++)), 0.0));
-        }
-        i++;
+      // Only add to mResults when erh
+      if (!all && !row.years.contains(year)) {
+        continue;
       }
+
+      if (all) { // show all years in the column
+        QStringList years = row.years.values();
+        years.sort();
+        mResults[i] << years.join("\r\n");
+      } else if (!all && row.years.contains(year)) { // show only selected year
+        mResults[i] << year;
+      } else {
+        throw std::invalid_argument(std::format("Invalid argument for filter by year '{}'",
+                                                year.toStdString()).c_str());
+      }
+
+      mResults[i] << QString::fromStdString(row.asset.getSymbol());
+      mResults[i] << QString::fromStdString(row.asset.getName());
+      mResults[i] << QString::fromStdString(assetTypeToString(row.asset.getAssetType()));
+
+      auto it = mDataCache.involvedTypes.begin();
+
+      for (size_t j = 0; j < row.allValuesPerTypeMap.size(); ++j) {
+        QString type = QString::fromStdString(transactionTypeToString(*it++));
+        if (all) { // all years
+          mResults[i]
+                  << QString("%1").arg(
+                          row.allValuesPerTypeMap.value(type), 0.0);
+        } else { // only specific year
+          mResults[i]
+                  << QString("%1").arg(row.valuesPerYearPerTypeMap.value({type, year}), 13.0);
+        }
+      }
+      i++;
     }
+
     endResetModel();
   }
-  // end updateResults
 
-
-} // qt
+} // End namespace
