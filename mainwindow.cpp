@@ -20,7 +20,7 @@ namespace embedonix::trading_tax_calculator::qt {
     ui->tableViewResults->setModel(mCapitalComTable);
 
 #ifdef __DEBUG__
-    mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\TRADING\all_20240928.csv)");
+    //mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\TRADING\all_20240928.csv)");
 #endif
 
     connect(ui->action_Open, &QAction::triggered,
@@ -36,22 +36,10 @@ namespace embedonix::trading_tax_calculator::qt {
 
     connect(ui->comboBoxYears, &QComboBox::currentTextChanged,
             mCapitalComTable, &AssetResultTableModelCapitalCom::filterDataForYear);
-
-    connect(ui->listWidgetAssets, &QListWidget::currentTextChanged,
-            this, &MainWindow::updateResultForSymbol);
-
   }
 
   MainWindow::~MainWindow() {
     delete ui;
-  }
-
-  void MainWindow::updateAssetListByYear(const QString& year) {
-    qDebug() << "Currently we need to show results for the year " << year;
-  }
-
-  void MainWindow::updateResultForSymbol(const QString& symbol) {
-    ui->textEditResults->clear();
   }
 
   void MainWindow::receiveYears(const QStringList& years) {

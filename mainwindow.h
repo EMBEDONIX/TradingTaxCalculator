@@ -31,11 +31,8 @@ namespace embedonix::trading_tax_calculator::qt {
 
   private slots:
 
-    void updateAssetListByYear(const QString& year);
-
-    void updateResultForSymbol(const QString& symbol);
-
   public slots:
+
     void receiveYears(const QStringList& years);
 
 

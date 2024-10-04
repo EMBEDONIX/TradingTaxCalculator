@@ -34,6 +34,8 @@ namespace embedonix::trading_tax_calculator {
         return "Adjustment";
       case TransactionType::Commision:
         return "Commision";
+      case TransactionType::Settlement:
+        return "Settlement";
       default:
         throw std::invalid_argument("Invalid TransactionType");
     }
@@ -72,7 +74,9 @@ namespace embedonix::trading_tax_calculator {
             {"adjustments",                 TransactionType::Adjustment},
             {"cash_adjustment_commodities", TransactionType::Adjustment},
             {"trade_correction",            TransactionType::Correction},
-            {"trade_commission_gsl",        TransactionType::Correction}
+            {"trade_commission_gsl",        TransactionType::Correction},
+            {"settlement",                  TransactionType::Settlement},
+            {"complaint_settlement",        TransactionType::Settlement}
     };
 
     auto it = transactionMap.find(lowerCaseTransaction);

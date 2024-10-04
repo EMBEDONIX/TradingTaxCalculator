@@ -168,15 +168,6 @@ namespace embedonix::trading_tax_calculator::qt {
       }
     }
 
-
-
-    // Debug print valuesPerYearPerTypeMap
-    for (const auto& row: rows) {
-      for (auto it = row.valuesPerYearPerTypeMap.cbegin(); it != row.valuesPerYearPerTypeMap.cend(); ++it) {
-        qDebug() << "Year:" << it.key().second << ", Type:" << it.key().first << ", Value:" << it.value();
-      }
-    }
-
     // Store in the cache
     mDataCache.rows = rows;
 

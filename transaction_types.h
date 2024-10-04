@@ -26,7 +26,8 @@ namespace embedonix::trading_tax_calculator {
     Withdrawal,
     Adjustment,
     Correction,
-    Commision
+    Commision,
+    Settlement
   };
 
 
