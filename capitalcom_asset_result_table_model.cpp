@@ -102,7 +102,7 @@ namespace embedonix::trading_tax_calculator::qt {
     mHeaders.clear();
     mHeaders.shrink_to_fit();
 
-    mHeaders << "Year";
+    mHeaders << "Year(s)";
     mHeaders << "Symbol";
     mHeaders << "Name";
     mHeaders << "Type";
@@ -180,7 +180,7 @@ namespace embedonix::trading_tax_calculator::qt {
       QStringList years = rows[i].years.values();
       years.sort();
 
-      mResults[i] << years.join("\r\n");
+      mResults[i] << years.join(", ");
       mResults[i] << QString::fromStdString(rows[i].asset.getSymbol());
       mResults[i] << QString::fromStdString(rows[i].asset.getName());
       mResults[i] << QString::fromStdString(assetTypeToString(rows[i].asset.getAssetType()));
@@ -223,7 +223,7 @@ namespace embedonix::trading_tax_calculator::qt {
       if (all) { // show all years in the column
         QStringList years = row.years.values();
         years.sort();
-        mResults[i] << years.join("\r\n");
+        mResults[i] << years.join(", ");
       } else if (!all && row.years.contains(year)) { // show only selected year
         mResults[i] << year;
       } else {
