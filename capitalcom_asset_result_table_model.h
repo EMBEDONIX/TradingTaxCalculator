@@ -11,13 +11,28 @@
 
 namespace embedonix::trading_tax_calculator::qt {
 
+  const QString AllYearsOption = QString("All");
+
+  /**
+   * @brief Represents a row in a table with associated data.
+   *
+   * The TableRow struct encapsulates a row that consists of:
+   * - An asset of type Asset.
+   * - A set of years for which the data is relevant.
+   * - A map containing all value types and their corresponding values.
+   * - A nested map that stores values for each type and year.
+   *
+   * The asset represents a financial or tangible item with attributes like name, symbol, and types.
+   * The years set is used for storing the different years of data.
+   * The allValuesPerTypeMap is a single-level map that associates each value type with its corresponding value.
+   * The valuesPerTypePerYearMap is a multi-level map that associates a pair of type and year with a value.
+   */
   struct TableRow {
     Asset asset;
     QSet<QString> years;
     QMap<QString, double> allValuesPerTypeMap;
-    QMap<QPair<QString, QString>, double> valuesPerYearPerTypeMap;
-    // FIXME need a new allValuesPerTypeMap < pair<string, string>, double >
-    // For   <year, type>, value
+
+    QMap<QPair<QString, QString>, double> valuesPerTypePerYearMap;
   };
 
   struct DataCache {
@@ -30,6 +45,98 @@ namespace embedonix::trading_tax_calculator::qt {
     ~DataCache() {
       invalidate();
     }
+
+    /**
+     * @brief Calculates the total sum for a given transaction type across
+     * all years.
+     *
+     * This function iterates through all available table rows and accumulates
+     * the sum of values associated with the specified TransactionType.
+     *
+     * @param type The type of transaction as defined by the TransactionType
+     * enum.
+     * @return The calculated sum of all values for the specified transaction
+     * type over all years.
+     */
+    double
+    getSumPerTypeAllYears(TransactionType type) {
+      double sum = 0;
+      for (const auto& row: rows) {
+
+        sum += row.allValuesPerTypeMap[QString::fromStdString(
+                transactionTypeToString(type))];
+      }
+      return sum;
+    }
+
+    /**
+     * @brief Calculates the total sum for a given transaction type in a specific year.
+     *
+     * This function determines whether to calculate the sum for all available years
+     * or for a specific year based on the provided year parameter. If the year is
+     * specified as "All", it will call getSumPerTypeAllYears to calculate the sum
+     * across all years. Otherwise, it calculates the sum specifically for the provided
+     * year.
+     *
+     * @param type The type of transaction as defined by the TransactionType enum.
+     * @param year The year for which to calculate the sum. It can be a specific year
+     * or "All" to indicate all years.
+     * @return The calculated sum of transactions for the specified type and year.
+     */
+    double
+    getSumPerTypePerYear(TransactionType type, QString year) {
+      bool all = (year.toLower() == AllYearsOption.toLower());
+      if (all) {
+        return getSumPerTypeAllYears(type);
+      }
+
+      QString typeStr = QString::fromStdString(transactionTypeToString(type));
+
+      double sum = 0;
+      for (const auto& row: rows) {
+
+      }
+
+      return sum;
+    }
+
+
+    /**
+     * @brief Calculates the total sum for a given transaction type in a
+     * specific year or across all years.
+     *
+     * This function checks whether the provided year parameter corresponds to
+     * all years or a specific year.
+     * If the year is specified as "All" (case-insensitive), it calls
+     * getSumPerTypeAllYears to calculate the sum
+     * across all years. Otherwise, it calls getSumPerTypePerYear to calculate
+     * the sum for the specified year.
+     *
+     * @param typeStr The type of transaction as a QString.
+     * @param year The year for which to calculate the sum, or "All" to indicate
+     * all years.
+     * @return The calculated sum of transactions for the specified type and
+     * year.
+     */
+    double getSumPerTypePerYear(QString typeStr, QString year) {
+      bool all = (year.toLower() == AllYearsOption.toLower());
+      if (all) {
+        return getSumPerTypeAllYears(
+                stringToTransactionType(typeStr.toStdString()));
+      }
+
+      return getSumPerTypePerYear(
+              stringToTransactionType(typeStr.toStdString()), year);
+    }
+
+    double getSumPerTypeAllYears(QString typeStr) {
+      double sum = 0;
+      for (const auto& row: rows) {
+        sum += row.allValuesPerTypeMap[typeStr];
+      }
+      return sum;
+    }
+
 
     void invalidate() {
       transactions.clear();
@@ -48,7 +155,6 @@ namespace embedonix::trading_tax_calculator::qt {
 
   public:
 
-    const QString AllYearsOption = QString("All");
 
     AssetResultTableModelCapitalCom(QObject* parent = nullptr);
 
@@ -94,5 +200,6 @@ namespace embedonix::trading_tax_calculator::qt {
     updateResuts(const QString& year = "all");
 
   };
+
 
 } // qt

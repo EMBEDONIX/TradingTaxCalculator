@@ -150,7 +150,7 @@ namespace embedonix::trading_tax_calculator::qt {
         QString typeString = QString::fromStdString(transactionTypeToString(type));
         row.allValuesPerTypeMap[typeString] = 0.0;
         for (const auto& uniqueYear: mDataCache.uniqueYears) {
-          row.valuesPerYearPerTypeMap[{typeString, QString::fromStdString(uniqueYear)}] = 0.0;
+          row.valuesPerTypePerYearMap[{typeString, QString::fromStdString(uniqueYear)}] = 0.0;
         }
       }
       rows.push_back(row);
@@ -162,7 +162,7 @@ namespace embedonix::trading_tax_calculator::qt {
           row.years.insert(QString::fromStdString(action.getDateString()).left(4));
           QString type = QString::fromStdString(transactionTypeToString(action.getType()));
           row.allValuesPerTypeMap[type] += action.getValue();
-          row.valuesPerYearPerTypeMap[{type,
+          row.valuesPerTypePerYearMap[{type,
                                        QString::fromStdString(action.getDateString()).left(4)}] += action.getValue();
         }
       }
@@ -212,6 +212,14 @@ namespace embedonix::trading_tax_calculator::qt {
     } else {
       mResults.resize(mDataCache.rows.size());
     }
+
+    QStringList resultRow;
+    resultRow << "ALL";
+    resultRow << "ALL";
+    resultRow << "ALL";
+    resultRow << "ALL";
+
+    QMap<QString, double> sumTypeMap;
     int i = 0;
     for (const auto& row: mDataCache.rows) {
 
@@ -240,16 +248,26 @@ namespace embedonix::trading_tax_calculator::qt {
       for (size_t j = 0; j < row.allValuesPerTypeMap.size(); ++j) {
         QString type = QString::fromStdString(transactionTypeToString(*it++));
         if (all) { // all years
+          double value = row.allValuesPerTypeMap.value(type);
           mResults[i]
-                  << QString("%1").arg(
-                          row.allValuesPerTypeMap.value(type), 0.0);
+                  << QString("%1").arg(value);
+          sumTypeMap[type] += value;
+
         } else { // only specific year
+          double value = row.valuesPerTypePerYearMap.value({type, year});
           mResults[i]
-                  << QString("%1").arg(row.valuesPerYearPerTypeMap.value({type, year}), 13.0);
+                  << QString("%1").arg(value);
+          sumTypeMap[type] += value;
         }
       }
       i++;
     }
+
+    for (const auto& type: mDataCache.involvedTypes ) {
+      resultRow << QString("%1").arg(sumTypeMap[QString::fromStdString(transactionTypeToString(type))]);
+    }
+
+    mResults.push_front(resultRow);
 
     endResetModel();
   }
