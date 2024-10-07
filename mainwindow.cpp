@@ -20,12 +20,13 @@ namespace embedonix::trading_tax_calculator::qt {
     ui->tableViewResults->setModel(mCapitalComTable);
 
 #ifdef __DEBUG__
-    mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\TRADING\all_20240928.csv)");
+    mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\all\trading_20241005.csv)");
 #endif
 
     connect(ui->action_Open, &QAction::triggered,
             this, [this]() {
-              QString fileName = QFileDialog::getOpenFileName(this, tr("Open File"), "", tr("CSV Files (*.csv)"));
+              QString fileName = QFileDialog::getOpenFileName(this,
+                                                              tr("Open File"), "", tr("CSV Files (*.csv)"));
               if (!fileName.isEmpty()) {
                 mCapitalComTable->loadFile(fileName);
               }
@@ -33,20 +34,24 @@ namespace embedonix::trading_tax_calculator::qt {
 
     connect(mCapitalComTable, &AssetResultTableModelCapitalCom::setOfYearsInData,
             this, &MainWindow::receiveYears, Qt::QueuedConnection);
-
-    connect(ui->comboBoxYears, &QComboBox::currentTextChanged,
-            mCapitalComTable, &AssetResultTableModelCapitalCom::filterDataForYear);
   }
 
   MainWindow::~MainWindow() {
     delete ui;
   }
 
+
   void MainWindow::receiveYears(const QStringList& years) {
+    // Disconnect (if connected) to prevent event while adding items to combobox
+    disconnect(ui->comboBoxYears, &QComboBox::currentTextChanged,
+               mCapitalComTable, &AssetResultTableModelCapitalCom::filterDataForYear);
     ui->comboBoxYears->clear();
     for (const auto& year: years) {
       ui->comboBoxYears->addItem(year);
     }
+    // Connect textchanged event again
+    connect(ui->comboBoxYears, &QComboBox::currentTextChanged,
+            mCapitalComTable, &AssetResultTableModelCapitalCom::filterDataForYear);
   }
 
 } // embedonix_tax_calculator_ui
