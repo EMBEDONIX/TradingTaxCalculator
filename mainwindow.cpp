@@ -10,6 +10,7 @@
 #include "ui_MainWindow.h"
 #include "capital_com_loader.h"
 
+
 namespace embedonix::trading_tax_calculator::qt {
 
   MainWindow::MainWindow(QWidget* parent) :
@@ -18,6 +19,7 @@ namespace embedonix::trading_tax_calculator::qt {
     new AssetResultTableModelCapitalCom(this);
     mCapitalComTable = new AssetResultTableModelCapitalCom(this);
     ui->tableViewResults->setModel(mCapitalComTable);
+    ui->tableViewResults->setSortingEnabled(true);
 
 #ifdef __DEBUG__
     mCapitalComTable->loadFile(R"(H:\GoogleDrive\Accounting\Brokers\Capital\all\trading_20241005.csv)");
@@ -34,10 +36,15 @@ namespace embedonix::trading_tax_calculator::qt {
 
     connect(mCapitalComTable, &AssetResultTableModelCapitalCom::setOfYearsInData,
             this, &MainWindow::receiveYears, Qt::QueuedConnection);
+
+
+
   }
 
   MainWindow::~MainWindow() {
     delete ui;
+//    delete mSortModel;
+    delete mCapitalComTable;
   }
 
 

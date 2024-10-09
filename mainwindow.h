@@ -8,6 +8,7 @@
 #include <QMainWindow>
 #include <QAbstractItemModel>
 #include <QListWidgetItem>
+#include <QSortFilterProxyModel>
 
 #include "capitalcom_asset_result_table_model.h"
 

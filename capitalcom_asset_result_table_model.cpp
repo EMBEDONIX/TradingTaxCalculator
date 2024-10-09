@@ -263,13 +263,38 @@ namespace embedonix::trading_tax_calculator::qt {
       i++;
     }
 
-    for (const auto& type: mDataCache.involvedTypes ) {
+    for (const auto& type: mDataCache.involvedTypes) {
       resultRow << QString("%1").arg(sumTypeMap[QString::fromStdString(transactionTypeToString(type))]);
     }
 
     mResults.push_front(resultRow);
 
     endResetModel();
+  }
+
+
+  void AssetResultTableModelCapitalCom::sort(int column, Qt::SortOrder order) {
+
+    std::sort(mResults.begin(), mResults.end(), [column, order](const QStringList& a, const QStringList& b) {
+      bool isNumericA = true;
+      bool isNumericB = true;
+
+      // Convert the values in the column to double
+      double valueA = a[column].toDouble(&isNumericA);
+      double valueB = b[column].toDouble(&isNumericB);
+
+      if (isNumericA && isNumericB) {
+        // If both values are numeric, compare them as doubles
+        return order == Qt::AscendingOrder ? valueA < valueB : valueA > valueB;
+      } else {
+        // If either value is non-numeric, fallback to string comparison
+        return order == Qt::AscendingOrder ? a[column] < b[column] : a[column] > b[column];
+      }
+    });
+
+
+    emit layoutChanged(); // Notify view that the data has changed
+
   }
 
 } // End namespace

@@ -156,6 +156,8 @@ namespace embedonix::trading_tax_calculator::qt {
   public:
 
 
+    void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
+
     AssetResultTableModelCapitalCom(QObject* parent = nullptr);
 
     AssetResultTableModelCapitalCom(QVector<QStringList> data, QObject* parent = nullptr);
